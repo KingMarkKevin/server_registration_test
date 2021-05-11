@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const dbConfig = require("./app/config/db.config");
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -17,11 +17,17 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const db = require("./app/models");
-const Role = db.role;
+const db = require("./models");
+//const Role = db.Role;
+const Role = mongoose.model(
+  "Role",
+  new mongoose.Schema({
+    name: String
+  })
+);
 
 db.mongoose
-  .connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
+  .connect(`mongodb+srv://kevin-king:cinanumerouno@cluster0.zuvcs.mongodb.net/watcher_project?retryWrites=true&w=majority`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
@@ -40,11 +46,8 @@ app.get("/", (req, res) => {
 });
 
 // routes
-require("./app/routes/auth.routes")(app);
-require("./app/routes/user.routes")(app);
-
-require('./app/routes/auth.routes')(app);
-require('./app/routes/user.routes')(app);
+require("./routes/auth.routes")(app);
+require("./routes/user.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
@@ -53,7 +56,8 @@ app.listen(PORT, () => {
 });
 
 function initial() {
-  Role.estimatedDocumentCount((err, count) => {
+    console.log(Role);
+    Role.collection.estimatedDocumentCount((err, count) => {
     if (!err && count === 0) {
       new Role({
         name: "user"
